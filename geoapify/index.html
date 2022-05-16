@@ -1,0 +1,91 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    </head>
+    <body class="container">
+        <div class="columns">
+            <div class="column">
+                <h1 class='is-size-1'>Geoapify Example</h1>
+                <form id="form">
+                    <div class="control">
+                    <input class="input" type="text" id="addressInput" placeholder="Enter an address" />
+                    </div>
+                </form>
+                <div id="results">
+                </div>
+                <h2>Details</h2>
+                <p id="status">
+
+                </p>
+            </div>
+        </div>
+        
+        <script>
+            function showDetails(idx){
+                console.log(myPlaces[idx])
+                const place = myPlaces[idx]
+                tmpl = `<p>${place.properties.address_line1}</p>
+                        <p>${place.properties.address_line2}</p>
+                        <p>${place.properties.city}</p>
+                        <p>${place.properties.county}</p>
+                        <p>${place.properties.postalcode}</p>`
+                const element = document.getElementById('status')
+                element.innerHTML = tmpl
+            }
+
+            function clearDetails(){
+                const element = document.getElementById('status')
+                element.innerHTML = ''
+            }
+            function makeAddressSuggestionBox(feature, idx){
+                let template =  `<div class="card" onclick="showDetails(${idx})">
+                        <div class="card-content">
+                        <div class="content">
+                            ${feature.properties.formatted}
+                        </div>
+                        </div>
+                    </div>`
+
+                return template
+                
+            }
+            let element = document.getElementById('addressInput')
+            const form = document.getElementById('form')
+            let myPlaces = []
+            // to stop extenisve charges, you probably would want to 
+            // check the length of the input to make sure that it is a certain length before searching
+            // or maybe trigger a search every X amount of characters. 
+            element.addEventListener('input', function(evt){
+                clearDetails()
+                let submittedAddress = element.value
+                console.log(submittedAddress.length)
+                if (submittedAddress.length < 1) {
+                    element.value = ''
+                    return 
+                } else {
+                let token = '<API_KEY>'
+                // constrain the results to Los Angeles, CA
+                let centerPoint =  "-118.30741030989886,34.04747316966934"
+                fetch(`https://api.geoapify.com/v1/geocode/search?text=${encodeURI(submittedAddress)}&limit=2&bias=proximity:${centerPoint}&apiKey=${token}`)
+                    .then( res => res.json())
+                    .then( function(data){
+                        let element = document.getElementById('results')
+                        myPlaces = data.features
+                        if (data.features.length > 1){
+                            let tmpl = ''
+                            // we are only going to show 2 for this example
+                            tmpl = makeAddressSuggestionBox(data.features[0], 0)
+                            myPlaces.push(data.features[0])
+                            tmpl = tmpl + makeAddressSuggestionBox(data.features[1], 1)
+                            myPlaces.push(data.features[1])
+                            element.innerHTML = tmpl
+                        } else {
+                            element.innerHTML = ''
+                        }
+                    })
+                }
+            })
+            
+        </script>
+    </body>
+</html>

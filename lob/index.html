@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    </head>
+    <body class="container">
+        <div class="columns">
+            <div class="column">
+                <h1 class="is-size-1">Lob Example</h1>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <form id="form">
+                    <div class="field">
+                        <div class="control">
+                            <label for="address1">Address</label>
+                            <input class="input" id="address1" type="text" placeholder="Text input">
+                        </div>
+                        <div class="control">
+                            <label for="address2">Address Line 2</label>
+                            <input class="input" id="address2" type="text" placeholder="Text input">
+                        </div>
+                        <div class="control">
+                            <label for="city">City</label>
+                            <input class="input" id="city" type="text" placeholder="Text input">
+                        </div>
+                        <div class="control">
+                            <label for="state">State</label>
+                            <input class="input" id="state" type="text" placeholder="Text input">
+                        </div>
+                        <div class="control">
+                            <label for="zip">Zip</label>
+                            <input class="input" id="zip" type="text" placeholder="Text input">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <input type="submit" value="Submit" class="button is-primary" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="column">
+                <strong>Details</strong>
+                <div id="status"></div>
+            </div>
+        </div>  
+        
+     
+        <script>
+            function showDetails(data){
+                let statusText = ''
+                if (data.valid_address) {
+                    statusText = statusText + `<div class="notification is-success">Valid Address</div>`
+                } else {
+                    statusText = statusText + `<div class="notification is-danger">Invalid Address</div>`
+                }
+
+                if (data.deliverability == "deliverable") {
+                    statusText = statusText + `<div class="notification is-success">Deliverable</div>`
+                } else {
+                    statusText = statusText + `<div class="notification is-danger">${data.deliverability}</div`
+                }
+                tmpl = `
+                        <p><strong>Primary Line</strong> ${data.primary_line}</p>
+                        <p><strong>Secondary Line</strong> ${data.secondary_line}</p>
+                        <p><strong>Last Line</strong>${data.last_line}</p>`
+                const element = document.getElementById('status')
+                element.innerHTML = statusText + tmpl
+            }
+
+            function clearDetails(){
+                const element = document.getElementById('status')
+                element.innerHTML = ''
+            }
+
+            
+            const form = document.getElementById('form')
+            let myPlaces = []
+            // to stop extenisve charges, you probably would want to 
+            // check the length of the input to make sure that it is a certain length before searching
+            // or maybe trigger a search every X amount of characters. 
+            form.addEventListener('submit', function(evt){
+                evt.preventDefault()
+                console.log(form.state.value)
+                let requestData = {
+                    'primary_line': form.address1.value,
+                    'secondary_line': form.address2.value,
+                    'city': form.city.value, // constrain the search to Los Angeles, CA
+                    'state': form.state.value,
+                    'zip_code': form.state.zip
+                }
+                let token = '<API_KEY>'
+                fetch(`https://api.lob.com/v1/us_verifications`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${btoa(token + ":")}`
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                    .then( res => res.json())
+                    .then( function(data){
+                        console.log(data)
+                        let element = document.getElementById('results')
+                        if (!data.error){
+                            let tmpl = ''
+                            showDetails(data)
+                            element.innerHTML = tmpl
+                        } else {
+                            element.innerHTML = ''
+                        }
+                    })
+                
+            })
+            
+        </script>
+    </body>
+</html>

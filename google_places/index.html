@@ -1,0 +1,51 @@
+<html>
+    <body>
+        <h1>Google Places Example</h1>
+        <form>
+            <input type="text" id="addressInput" placeholder="Enter an address" />
+        </form>
+        <h2>Details</h2>
+        <p id="status">
+
+        </p>
+        <script>
+            function initMap() {
+            let centerPoint = { lat: 34.04747316966934, lng: -118.30741030989886} // we set the center of the search radius to be Los Angeles, CA 
+            // Create a bounding box with sides ~10km away from the center point
+            const defaultBounds = {
+                north: centerPoint.lat + 0.1,
+                south: centerPoint.lat - 0.1,
+                east: centerPoint.lng + 0.1,
+                west: centerPoint.lng - 0.1,
+            };
+            const options = {
+                bounds: defaultBounds,
+                componentRestrictions: { country: "us" },
+                fields: ["address_components", "geometry", "name"], // you will be charged by what info you decide to return back, so check this carefully
+                strictBounds: false,
+                types: ["address"], // you can expand this to search for only businesses, or only residences, or particular types of businesses
+            };
+            const input = document.getElementById('addressInput')
+            const autocomplete = new google.maps.places.Autocomplete(input, options);
+            
+            // get the Place address that the user selected
+            autocomplete.addListener("place_changed", function(){
+                let selectedPlace = autocomplete.getPlace()
+                console.log(selectedPlace)
+                let template = `
+                   <p>Canonical Address: ${selectedPlace.name}</p>`
+                for (comp of selectedPlace.address_components) {
+                    console.log(comp)
+                    template = template + `<p><strong>${comp.types[0]}</strong> ${comp.long_name}</p>`
+                }
+                document.getElementById('status').innerHTML = template
+            })
+            
+        }
+        </script>
+        <script
+        src="https://maps.googleapis.com/maps/api/js?key=<API_KEY>&callback=initMap&libraries=places&v=weekly"
+        defer
+      ></script>
+    </body>
+</html>

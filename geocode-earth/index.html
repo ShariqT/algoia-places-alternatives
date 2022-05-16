@@ -1,0 +1,32 @@
+<html>
+    <body>
+        <h1>Geocode Earth Example</h1>
+        <form>
+            <ge-autocomplete
+                api_key="<API_KEY>"
+            ></ge-autocomplete>
+        </form>
+        <h2>Details</h2>
+        <p id="status">
+
+        </p>
+        <script>
+            const element = document.querySelector('ge-autocomplete') // we target the custom element...
+            // and attach an eventListener on it. There are several events that are available for us to 
+            // listen for that are outlined in the Geocode Earth docs. 
+            element.addEventListener('select', function(event){  
+                let addressComponents = event.detail.properties
+                let template = `<p><strong>Name</strong> ${addressComponents.name}</p>
+                    <p><strong>Locality</strong> ${addressComponents.locality}</p>
+                    <p><strong>County</strong> ${addressComponents.county} </p>
+                    <p><strong>Postal Code</strong> ${addressComponents.postalcode} </p>
+                    <p><strong>State</strong> ${addressComponents.region} </p>`
+                document.getElementById('status').innerHTML = template
+            })
+        </script>
+        <script
+        type="module"
+        src="https://cdn.jsdelivr.net/npm/@geocodeearth/autocomplete-element/dist/bundle.js">
+      </script>
+    </body>
+</html>
